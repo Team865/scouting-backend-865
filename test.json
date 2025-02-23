@@ -1,0 +1,34 @@
+{
+    "scouter": "",
+    "team": "",
+    "match_number": "",
+    "alliance_position": "None",
+    "game_data": {
+        "game": "Reefscape2025",
+        "auto": {
+            "coral1": 0,
+            "coral2": 0,
+            "coral3": 0,
+            "coral4": 0,
+            "barge": 0,
+            "mobility": false
+        },
+        "teleop": {
+            "coral1": 0,
+            "coral2": 0,
+            "coral3": 0,
+            "coral4": 0,
+            "barge": 0,
+            "algae_processor": 0,
+            "fouls": 0,
+            "tech_fouls": 0,
+            "defense": false
+        },
+        "endgame": {
+            "park": false,
+            "shallow": false,
+            "deep": false,
+            "time_climbed_at": 0
+        }
+    }
+}
