@@ -1,8 +1,12 @@
-use std::{fs, net::{IpAddr, Ipv4Addr}};
+use std::{
+    fs, io::Cursor, net::{IpAddr, Ipv4Addr}
+};
 
 use data::GameData;
 use gcp_auth::CustomServiceAccount;
-use rocket::{get, http::{Header, Status}, launch, options, post, routes, Config, Responder, State};
+use rocket::{
+    get, http::{Header, Status}, launch, options, post, response::Responder, routes, Config, Response, State
+};
 use serde::{Deserialize, Serialize};
 
 mod data;
@@ -18,31 +22,53 @@ fn index() -> &'static str {
     "WARP7 Scouting API"
 }
 
-#[derive(Responder)]
-struct OptionsResponder {
-    response: Status,
-    allow_origin: Header<'static>,
-    allow_methods: Header<'static>,
-    allow_headers: Header<'static>
+struct CORSResponder {
+    status: Status,
+    body: String,
 }
 
-#[options("/add_report")]
-fn add_report_options(state: &State<StateData>) -> OptionsResponder {
-    OptionsResponder {
-        response: Status::new(200),
-        allow_origin: Header { name: "Access-Control-Allow-Origin".into(), value: state.settings.frontend.clone().into() },
-        allow_methods: Header { name: "Access-Control-Allow-Methods".into(), value: "POST".into() },
-        allow_headers: Header { name: "Access-Control-Allow-Headers".into(), value: "*".into() }
+impl<'r> Responder<'r, 'static> for CORSResponder {
+    fn respond_to(self, _request: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
+        Response::build()
+            .status(self.status)
+            .sized_body(self.body.len(), Cursor::new(self.body))
+            .header(Header {
+                name: "Access-Control-Allow-Origin".into(),
+                value: "*".into(),
+            })
+            .header(Header {
+                name: "Access-Control-Allow-Methods".into(),
+                value: "POST".into(),
+            })
+            .header(Header {
+                name: "Access-Control-Allow-Headers".into(),
+                value: "*".into(),
+            })
+            .ok()
     }
 }
 
+impl Default for CORSResponder {
+    fn default() -> Self {
+        Self { status: Status::new(200), body: String::new() }
+    }
+}
+
+#[options("/add_report")]
+fn add_report_options() -> CORSResponder {
+    CORSResponder::default()
+}
+
 #[post("/add_report", data = "<raw_data>")]
-async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) {
+async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) -> CORSResponder {
     let data: GameData = match serde_json::from_slice(raw_data) {
         Ok(data) => data,
         Err(e) => {
-            println!("Failed to parse data: {e:#?}");
-            return;
+            let body = format!("{e:#?}");
+            return CORSResponder {
+                body,
+                status: Status::new(400),
+            };
         }
     };
     let values = serde_json::to_value(&data)
@@ -67,10 +93,15 @@ async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) {
         &state.account,
         &state.settings.spreadsheet_id,
         &worksheet,
-        values,
+        &values,
     )
     .await;
     println!("{result:#?}");
+
+    CORSResponder {
+        body: format!("{data:?}"),
+        ..Default::default()
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -127,5 +158,8 @@ async fn launch() -> _ {
             account: sheets::get_account(&settings.credentials_path),
             settings,
         })
-        .mount("/warp7api/scouting", routes![index, add_report_options, add_report_post])
+        .mount(
+            "/warp7api/scouting",
+            routes![index, add_report_options, add_report_post],
+        )
 }

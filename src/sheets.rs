@@ -26,7 +26,7 @@ pub async fn append(
     account: &CustomServiceAccount,
     spreadsheet_id: &str,
     worksheet_name: &str,
-    values: Vec<String>,
+    values: &Vec<String>,
 ) -> Result<Response<AppendValuesResponse>, ClientError> {
     let client = get_client(account).await;
     let sheets = client.spreadsheets();
@@ -45,7 +45,7 @@ pub async fn append(
             &ValueRange {
                 major_dimension: Some(Dimension::Rows),
                 range: range.clone(),
-                values: vec![values],
+                values: vec![values.clone()],
             },
         )
         .await

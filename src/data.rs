@@ -1,3 +1,4 @@
+use non_empty_string::NonEmptyString;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -77,13 +78,14 @@ impl Into<String> for AlliancePosition {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(into = "Vec<String>")]
 pub struct GameData {
-    pub scouter: String,
-    pub team: String,
-    pub match_number: String,
+    pub scouter: NonEmptyString,
+    pub team: NonEmptyString,
+    pub match_number: NonEmptyString,
     pub alliance_position: AlliancePosition,
+    pub commentary: String,
     pub is_test: bool,
     pub game_data: GameSpecificData,
 }
@@ -91,10 +93,11 @@ pub struct GameData {
 impl Into<Vec<String>> for GameData {
     fn into(self) -> Vec<String> {
         let mut fields = vec![
-            self.scouter,
-            self.team,
-            self.match_number,
+            self.scouter.into(),
+            self.team.into(),
+            self.match_number.into(),
             self.alliance_position.into(),
+            self.commentary,
         ];
         match self.game_data {
             GameSpecificData::None => {}
