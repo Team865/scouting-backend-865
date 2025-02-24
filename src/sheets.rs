@@ -2,14 +2,13 @@ use gcp_auth::{CustomServiceAccount, TokenProvider};
 use sheets::{
     Client, ClientError, Response,
     types::{
-        AppendValuesResponse, DateTimeRenderOption, Dimension, InsertDataOption,
-        ValueInputOption, ValueRange, ValueRenderOption,
+        AppendValuesResponse, DateTimeRenderOption, Dimension, InsertDataOption, ValueInputOption,
+        ValueRange, ValueRenderOption,
     },
 };
 
 pub fn get_account(credentials_path: &str) -> CustomServiceAccount {
-    CustomServiceAccount::from_file(credentials_path)
-        .expect("Failed to get auth provider")
+    CustomServiceAccount::from_file(credentials_path).expect("Failed to get auth provider")
 }
 
 pub async fn get_client(account: &CustomServiceAccount) -> Client {
@@ -20,13 +19,7 @@ pub async fn get_client(account: &CustomServiceAccount) -> Client {
     ];
     let token = account.token(scopes).await.expect("Failed to get token");
 
-    Client::new(
-        "",
-        "",
-        "",
-        token.as_str(),
-        "",
-    )
+    Client::new("", "", "", token.as_str(), "")
 }
 
 pub async fn append(
@@ -38,10 +31,12 @@ pub async fn append(
     let client = get_client(account).await;
     let sheets = client.spreadsheets();
 
+    assert!(values.len() <= 26);
+    let range = format!("'{worksheet_name}'!A:A");
     sheets
         .values_append(
             spreadsheet_id,
-            worksheet_name,
+            &range,
             false,
             InsertDataOption::InsertRows,
             DateTimeRenderOption::Noop,
@@ -49,7 +44,7 @@ pub async fn append(
             ValueInputOption::UserEntered,
             &ValueRange {
                 major_dimension: Some(Dimension::Rows),
-                range: String::from(""),
+                range: range.clone(),
                 values: vec![values],
             },
         )

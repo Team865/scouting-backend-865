@@ -5,7 +5,6 @@ use gcp_auth::CustomServiceAccount;
 use rocket::{get, http::{Header, Status}, launch, options, post, routes, Config, Responder, State};
 use serde::{Deserialize, Serialize};
 
-mod api;
 mod data;
 mod sheets;
 
@@ -28,10 +27,10 @@ struct OptionsResponder {
 }
 
 #[options("/add_report")]
-fn add_report_options() -> OptionsResponder {
+fn add_report_options(state: &State<StateData>) -> OptionsResponder {
     OptionsResponder {
         response: Status::new(200),
-        allow_origin: Header { name: "Access-Control-Allow-Origin".into(), value: "*".into() },
+        allow_origin: Header { name: "Access-Control-Allow-Origin".into(), value: state.settings.frontend.clone().into() },
         allow_methods: Header { name: "Access-Control-Allow-Methods".into(), value: "POST".into() },
         allow_headers: Header { name: "Access-Control-Allow-Headers".into(), value: "*".into() }
     }
@@ -78,6 +77,7 @@ async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) {
 struct Settings {
     address: IpAddr,
     port: u16,
+    frontend: String,
     credentials_path: String,
     spreadsheet_id: String,
     main_worksheet: String,
@@ -89,6 +89,7 @@ impl Default for Settings {
         Self {
             address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             port: 42069,
+            frontend: String::from("*"),
             spreadsheet_id: String::from(""),
             credentials_path: String::from("service_account.json"),
             main_worksheet: String::from("Raw Data"),
