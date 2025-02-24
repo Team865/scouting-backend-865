@@ -19,7 +19,6 @@ pub struct Teleop2025 {
     pub barge: u32,
     pub algae_processor: u32,
     pub fouls: u32,
-    pub tech_fouls: u32,
     pub defense: bool,
 }
 
@@ -122,7 +121,6 @@ impl Into<Vec<String>> for GameData2025 {
             self.teleop.barge.to_string(),
             self.teleop.algae_processor.to_string(),
             self.teleop.fouls.to_string(),
-            self.teleop.tech_fouls.to_string(),
             self.teleop.defense.to_string(),
             self.endgame.park.to_string(),
             self.endgame.shallow.to_string(),
