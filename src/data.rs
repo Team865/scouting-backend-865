@@ -99,29 +99,35 @@ impl Into<Vec<String>> for GameData {
         ];
         match self.game_data {
             GameSpecificData::None => {}
-            GameSpecificData::Reefscape2025(data) => fields.append(&mut vec![
-                data.auto.coral1.to_string(),
-                data.auto.coral2.to_string(),
-                data.auto.coral3.to_string(),
-                data.auto.coral4.to_string(),
-                data.auto.barge.to_string(),
-                data.auto.mobility.to_string(),
-                data.teleop.coral1.to_string(),
-                data.teleop.coral2.to_string(),
-                data.teleop.coral3.to_string(),
-                data.teleop.coral4.to_string(),
-                data.teleop.barge.to_string(),
-                data.teleop.algae_processor.to_string(),
-                data.teleop.fouls.to_string(),
-                data.teleop.tech_fouls.to_string(),
-                data.teleop.defense.to_string(),
-                data.endgame.park.to_string(),
-                data.endgame.shallow.to_string(),
-                data.endgame.deep.to_string(),
-                data.endgame.time_climbed_at.to_string(),
-            ]),
+            GameSpecificData::Reefscape2025(data) => fields.append(&mut data.into()),
         };
 
         fields
+    }
+}
+
+impl Into<Vec<String>> for GameData2025 {
+    fn into(self) -> Vec<String> {
+        vec![
+            self.auto.coral1.to_string(),
+            self.auto.coral2.to_string(),
+            self.auto.coral3.to_string(),
+            self.auto.coral4.to_string(),
+            self.auto.barge.to_string(),
+            self.auto.mobility.to_string(),
+            self.teleop.coral1.to_string(),
+            self.teleop.coral2.to_string(),
+            self.teleop.coral3.to_string(),
+            self.teleop.coral4.to_string(),
+            self.teleop.barge.to_string(),
+            self.teleop.algae_processor.to_string(),
+            self.teleop.fouls.to_string(),
+            self.teleop.tech_fouls.to_string(),
+            self.teleop.defense.to_string(),
+            self.endgame.park.to_string(),
+            self.endgame.shallow.to_string(),
+            self.endgame.deep.to_string(),
+            self.endgame.time_climbed_at.to_string(),
+        ]
     }
 }
