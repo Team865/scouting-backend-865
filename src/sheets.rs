@@ -1,5 +1,4 @@
 use gcp_auth::{CustomServiceAccount, TokenProvider};
-use serde::Deserialize;
 use sheets::{
     Client, ClientError, Response,
     types::{

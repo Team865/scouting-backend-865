@@ -1,9 +1,8 @@
-use std::fs;
+use std::{fs, net::{IpAddr, Ipv4Addr}};
 
-use ::sheets::{Client, spreadsheets::Spreadsheets};
 use data::GameData;
 use gcp_auth::CustomServiceAccount;
-use rocket::{Config, State, get, launch, post, routes};
+use rocket::{get, http::{Header, Status}, launch, options, post, routes, Config, Responder, State};
 use serde::{Deserialize, Serialize};
 
 mod api;
@@ -20,8 +19,26 @@ fn index() -> &'static str {
     "WARP7 Scouting API"
 }
 
+#[derive(Responder)]
+struct OptionsResponder {
+    response: Status,
+    allow_origin: Header<'static>,
+    allow_methods: Header<'static>,
+    allow_headers: Header<'static>
+}
+
+#[options("/add_report")]
+fn add_report_options() -> OptionsResponder {
+    OptionsResponder {
+        response: Status::new(200),
+        allow_origin: Header { name: "Access-Control-Allow-Origin".into(), value: "*".into() },
+        allow_methods: Header { name: "Access-Control-Allow-Methods".into(), value: "POST".into() },
+        allow_headers: Header { name: "Access-Control-Allow-Headers".into(), value: "*".into() }
+    }
+}
+
 #[post("/add_report", data = "<raw_data>")]
-async fn add_report(state: &State<StateData>, raw_data: &[u8]) {
+async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) {
     let data: GameData = match serde_json::from_slice(raw_data) {
         Ok(data) => data,
         Err(e) => {
@@ -59,6 +76,7 @@ async fn add_report(state: &State<StateData>, raw_data: &[u8]) {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Settings {
+    address: IpAddr,
     port: u16,
     credentials_path: String,
     spreadsheet_id: String,
@@ -69,6 +87,7 @@ struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             port: 42069,
             spreadsheet_id: String::from(""),
             credentials_path: String::from("service_account.json"),
@@ -97,6 +116,7 @@ async fn launch() -> _ {
     println!("Using these {settings:#?}");
 
     let config = Config {
+        address: settings.address,
         port: settings.port,
         ..Config::default()
     };
@@ -106,5 +126,5 @@ async fn launch() -> _ {
             account: sheets::get_account(&settings.credentials_path),
             settings,
         })
-        .mount("/warp7api/scouting", routes![index, add_report])
+        .mount("/warp7api/scouting", routes![index, add_report_options, add_report_post])
 }
