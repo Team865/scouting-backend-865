@@ -50,11 +50,17 @@ pub enum GameSpecificData {
 pub enum AlliancePosition {
     #[default]
     None,
+    #[serde(rename = "Red 1")]
     Red1,
+    #[serde(rename = "Red 2")]
     Red2,
+    #[serde(rename = "Red 3")]
     Red3,
+    #[serde(rename = "Blue 1")]
     Blue1,
+    #[serde(rename = "Blue 2")]
     Blue2,
+    #[serde(rename = "Blue 3")]
     Blue3,
 }
 
@@ -79,6 +85,7 @@ pub struct GameData {
     pub team: String,
     pub match_number: String,
     pub alliance_position: AlliancePosition,
+    pub is_test: bool,
     pub game_data: GameSpecificData,
 }
 
