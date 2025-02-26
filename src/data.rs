@@ -116,6 +116,7 @@ impl Into<Vec<String>> for GameData2025 {
             self.auto.coral2.to_string(),
             self.auto.coral3.to_string(),
             self.auto.coral4.to_string(),
+            self.auto.processor.to_string(),
             self.auto.barge.to_string(),
             self.auto.mobility.to_string(),
             self.teleop.coral1.to_string(),
