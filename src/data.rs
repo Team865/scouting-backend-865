@@ -8,6 +8,7 @@ pub struct Auto2025 {
     pub coral3: u32,
     pub coral4: u32,
     pub barge: u32,
+    pub processor: u32,
     pub mobility: bool,
 }
 
@@ -18,7 +19,7 @@ pub struct Teleop2025 {
     pub coral3: u32,
     pub coral4: u32,
     pub barge: u32,
-    pub algae_processor: u32,
+    pub processor: u32,
     pub fouls: u32,
     pub defense: bool,
 }
@@ -122,7 +123,7 @@ impl Into<Vec<String>> for GameData2025 {
             self.teleop.coral3.to_string(),
             self.teleop.coral4.to_string(),
             self.teleop.barge.to_string(),
-            self.teleop.algae_processor.to_string(),
+            self.teleop.processor.to_string(),
             self.teleop.fouls.to_string(),
             self.teleop.defense.to_string(),
             self.endgame.park.to_string(),
