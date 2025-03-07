@@ -5,7 +5,7 @@ note: Name means the name of the game in Pascal case, YYYY means the year of the
 1. add a file to `src/data` named `game_YYYY.rs`
 2. add structs that match your data (see [`src/data/game_2025.rs`](src/games/game_2025.rs) for an example),
    and can be (de)serialized with serde. also make sure the main one is called `GameDataYYYY` and implements `Into<Vec<String>>`.
-3. add `NameYYYY(GameDataYYYY)` into `GameSpecificData` in `src/data.rs`
+3. add `NameYYYY(GameDataYYYY)` into `GameSpecificData` in `src/data.rs` (this must match the `Game` value in the frontend)
 4. add `GameSpecificData::NameYYYY(data) => fields.append(&mut data.into())` to `GameData`'s `Into<Vec<String>>::into` in `src/data.rs`
 
 ## Setting up your own version
