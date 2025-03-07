@@ -28,3 +28,30 @@ note: Name means the name of the game in Pascal case, YYYY means the year of the
 4. run the backend and send a report to it from your frontend to make sure it works
 5. set up nginx or something to proxy the frontend and backend onto the same domain, and secure everything.
    (this step is, although just generally good advice, mainly to prevent friction from CORS)
+
+sample nginx config:
+```
+events {
+
+}
+
+http {
+    server {
+        listen 443 ssl;
+
+        server_name <domain>;
+        ssl_certificate C:/Certbot/live/<domain>/fullchain.pem;
+        ssl_certificate_key C:/Certbot/live/<domain>/privkey.pem;
+
+        location / {
+            proxy_pass http://localhost:3000;
+        }
+
+        location /warp7api/scouting {
+            proxy_pass http://localhost:42069;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+```
