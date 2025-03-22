@@ -28,7 +28,7 @@ pub struct Endgame2025 {
     pub park: bool,
     pub shallow: bool,
     pub deep: bool,
-    pub time_climbed_at: u32,
+    pub time_climbed_at: f32,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
