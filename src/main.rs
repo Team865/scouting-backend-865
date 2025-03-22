@@ -1,11 +1,21 @@
 use std::{
-    fs, io::Cursor, net::{IpAddr, Ipv4Addr}
+    fs,
+    fs::OpenOptions,
+    io::Cursor,
+    net::{IpAddr, Ipv4Addr},
 };
 
+use chrono::Local;
 use data::GameData;
+use fern::Dispatch;
 use gcp_auth::CustomServiceAccount;
+use log::{error, info};
 use rocket::{
-    get, http::{Header, Status}, launch, options, post, response::Responder, routes, Config, Response, State
+    Config, Response, State, get,
+    http::{Header, Status},
+    launch, options, post,
+    response::Responder,
+    routes,
 };
 use serde::{Deserialize, Serialize};
 
@@ -50,7 +60,10 @@ impl<'r> Responder<'r, 'static> for CORSResponder {
 
 impl Default for CORSResponder {
     fn default() -> Self {
-        Self { status: Status::new(200), body: String::new() }
+        Self {
+            status: Status::new(200),
+            body: String::new(),
+        }
     }
 }
 
@@ -65,6 +78,7 @@ async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) -> CORSRespo
         Ok(data) => data,
         Err(e) => {
             let body = format!("{e:#?}");
+            error!("{body}");
             return CORSResponder {
                 body,
                 status: Status::new(400),
@@ -87,7 +101,7 @@ async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) -> CORSRespo
         state.settings.main_worksheet.clone()
     };
 
-    println!("{data:#?}\nvalues: {values:?}\nworksheet: {worksheet}");
+    info!("{data:#?}\nvalues: {values:?}\nworksheet: {worksheet}");
 
     let result = sheets::append(
         &state.account,
@@ -96,7 +110,7 @@ async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) -> CORSRespo
         &values,
     )
     .await;
-    println!("{result:#?}");
+    info!("{result:#?}");
 
     CORSResponder {
         body: format!("{data:?}"),
@@ -129,8 +143,36 @@ impl Default for Settings {
     }
 }
 
+// init log
+fn setup_logging() -> Result<(), fern::InitError> {
+    let log_file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .append(true)
+        .open("output.log")?;
+
+    Dispatch::new()
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "[{}][{}][{}] {}",
+                Local::now().format("%Y-%m-%d %H:%M:%S"),
+                record.level(),
+                record.target(),
+                message
+            ))
+        })
+        .level(log::LevelFilter::Info)
+        // Do not send to standard output.
+        // .chain(std::io::stdout())
+        .chain(log_file)
+        .apply()?; // Apply the logging configuration
+    Ok(())
+}
+
 #[launch]
 async fn launch() -> _ {
+    setup_logging().expect("Failed to set up logging");
+
     let settings = if let Ok(settings_json) = fs::read("settings.json") {
         serde_json::from_slice(&settings_json).expect("Couldn't parse settings")
     } else {
@@ -145,7 +187,7 @@ async fn launch() -> _ {
         settings
     };
 
-    println!("Using these {settings:#?}");
+    info!("Using these {settings:#?}");
 
     let config = Config {
         address: settings.address,
