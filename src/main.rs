@@ -104,8 +104,9 @@ async fn add_report_post(state: &State<StateData>, raw_data: &[u8]) -> CORSRespo
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct Settings {
+    root: String,
     address: IpAddr,
     port: u16,
     frontend: String,
@@ -118,6 +119,7 @@ struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            root: String::from("/"),
             address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             port: 42069,
             frontend: String::from("*"),
@@ -156,10 +158,10 @@ async fn launch() -> _ {
     rocket::custom(&config)
         .manage(StateData {
             account: sheets::get_account(&settings.credentials_path),
-            settings,
+            settings: settings.clone(),
         })
         .mount(
-            "/warp7api/scouting",
+            settings.root.as_str(),
             routes![index, add_report_options, add_report_post],
         )
 }
